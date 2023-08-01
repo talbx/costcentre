@@ -1,10 +1,7 @@
 package main
 
 import (
-	"fmt"
 	"github.com/Rhymond/go-money"
-	"strconv"
-	"strings"
 )
 
 type Transaction struct {
@@ -20,8 +17,9 @@ type Transaction struct {
 }
 
 type Payment struct {
-	Amount *money.Money
-	Date   string
+	Amount   *money.Money
+	Date     string
+	Receiver string
 }
 
 func main() {
@@ -29,31 +27,7 @@ func main() {
 	list := readYamlFile("r")
 	payments := make(map[string][]Payment, 0)
 	for _, record := range records {
-		if strings.Contains(record.Amount, "-") {
-			found := false
-			realDeal := strings.Split(record.Amount, "-")[1]
-			r1 := strings.ReplaceAll(realDeal, ".", "")
-			r2 := strings.ReplaceAll(r1, ",", ".")
-			f, err := strconv.ParseFloat(r2, 32)
-			if err != nil {
-				panic(err)
-			}
-			for _, receiver := range list {
-				//fmt.Printf("Checking if %v is in %v\n", receiver, record.Receiver)
-				if strings.Contains(strings.ToLower(record.Receiver), strings.ToLower(receiver)) || (strings.Contains(strings.ToLower(record.Purpose), strings.ToLower(receiver))) {
-					payments[receiver] = append(payments[receiver], Payment{money.NewFromFloat(f, money.EUR), record.Buchung})
-					found = true
-					break
-				}
-			}
-			if found == false {
-				fmt.Printf("nothing found for %v, so will add %v to rest\n", record.Receiver, record.Amount)
-				payments["rest"] = append(payments["rest"], Payment{
-					Amount: money.NewFromFloat(f, money.EUR),
-					Date:   record.Buchung,
-				})
-			}
-		}
+		find(record, list, payments)
 	}
 
 	result := summarize(payments)
@@ -61,6 +35,28 @@ func main() {
 	create(total)
 }
 
+type InputData struct {
+	Groceries    []string `yaml:"groceries"`
+	Services     []string `yaml:"services"`
+	Insurances   []string `yaml:"insurances"`
+	FoodDelivery []string `yaml:"foodDelivery"`
+	Rest         []string `yaml:"misc"`
+	Family       []string `yaml:"family"`
+	Friends      []string `yaml:"friends"`
+	Appartment   []string `yaml:"appartment"`
+}
+
+type ExportData struct {
+	Groceries    []Payment `yaml:"groceries"`
+	Services     []Payment `yaml:"services"`
+	Insurances   []Payment `yaml:"insurances"`
+	FoodDelivery []Payment `yaml:"foodDelivery"`
+	Rest         []Payment `yaml:"misc"`
+	Family       []Payment `yaml:"family"`
+	Friends      []Payment `yaml:"friends"`
+	Appartment   []Payment `yaml:"appartment"`
+}
+
 type temp struct {
-	Data []string
+	Data map[string][]string
 }

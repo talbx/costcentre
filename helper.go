@@ -36,7 +36,7 @@ func readCsvFile(filePath string) []Transaction {
 	return clients
 }
 
-func readYamlFile(r string) []string {
+func readYamlFile(r string) temp {
 	viper.SetConfigName(r)      // name of config file (without extension)
 	viper.AddConfigPath(".")    // path to look for the config file in
 	err := viper.ReadInConfig() // Find and read the config file
@@ -45,5 +45,5 @@ func readYamlFile(r string) []string {
 	}
 	var conf temp
 	err = viper.Unmarshal(&conf)
-	return conf.Data
+	return conf
 }

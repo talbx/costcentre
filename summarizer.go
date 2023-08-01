@@ -6,7 +6,7 @@ import (
 )
 
 type Summarized struct {
-	Receiver string
+	Category string
 	Payments []Payment
 	Sum      *money.Money
 }
@@ -34,7 +34,7 @@ func summarize(e map[string][]Payment) []Summarized {
 		}
 
 		s = append(s, Summarized{
-			Receiver: k,
+			Category: k,
 			Payments: v,
 			Sum:      sum,
 		})
@@ -53,7 +53,7 @@ func totalize(s []Summarized) TotalSummarized {
 			panic(err)
 		}
 		n = y
-		fmt.Println(su.Receiver, su.Sum.Display())
+		fmt.Println(su.Category, su.Sum.Display())
 	}
 	return TotalSummarized{TotalSum: n, Transactions: s}
 }
