@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/Rhymond/go-money"
 	"github.com/go-echarts/go-echarts/v2/charts"
+	"html/template"
 	"log"
 	"os"
 )
@@ -23,6 +24,7 @@ type Payment struct {
 	Amount   *money.Money
 	Date     string
 	Receiver string
+	Purpose  string
 }
 
 func main() {
@@ -31,20 +33,31 @@ func main() {
 	dumps := readDumps()
 	pies := make([]*charts.Pie, 0)
 	for key, records := range dumps {
-
-		list := readYamlFile("r")
-		payments := make(map[string][]Payment, 0)
-		for _, record := range records {
-			find(record, list, payments)
-		}
-
-		result := summarize(payments)
-		total := totalize(result)
-		pie := create(key, total)
-		pies = append(pies, pie)
+		pies = processMonth(records, key, pies)
 	}
 
-	createPage(pies)
+}
+
+func processMonth(allMonthlyRecords []Transaction, month string, pies []*charts.Pie) []*charts.Pie {
+	list := readYamlFile("r")
+	payments := make(map[string][]Payment, 0)
+	for _, record := range allMonthlyRecords {
+		find(record, list, payments)
+	}
+
+	result := summarize(payments)
+	total := totalize(result)
+	topOfTheTop := top(payments)
+	pie := create(month, total)
+	pies = append(pies, pie)
+	f := createPage(month, []*charts.Pie{pie})
+
+	tmpl := template.Must(template.ParseFiles("top.html"))
+	err := tmpl.Execute(f, topOfTheTop)
+	if err != nil {
+		panic(err)
+	}
+	return pies
 }
 
 func readDumps() map[string][]Transaction {

@@ -75,14 +75,14 @@ func create(name string, total TotalSummarized) *charts.Pie {
 	return pieBase(name, total)
 }
 
-func createPage(charts []*charts.Pie) {
+func createPage(month string, charts []*charts.Pie) *os.File {
 	page := components.NewPage()
 	for _, chart := range charts {
 		page.AddCharts(
 			chart,
 		)
 	}
-	f, err := os.Create("pie.html")
+	f, err := os.Create(fmt.Sprintf("%v.html", month))
 	if err != nil {
 		panic(err)
 	}
@@ -90,4 +90,7 @@ func createPage(charts []*charts.Pie) {
 	if err != nil {
 		panic(err)
 	}
+
+	return f
+
 }

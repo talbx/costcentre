@@ -21,7 +21,7 @@ func find(record Transaction, list temp, payments map[string][]Payment) {
 		for k, items := range list.Data {
 			for _, item := range items {
 				if isInList(record, item) {
-					payments[k] = append(payments[k], Payment{money.NewFromFloat(f, money.EUR), record.Buchung, record.Receiver})
+					payments[k] = appendPayment(k, record, payments, f)
 					found = true
 					break
 				}
@@ -29,21 +29,22 @@ func find(record Transaction, list temp, payments map[string][]Payment) {
 		}
 		if found == false {
 			if strings.Contains(record.Purpose, "Apple Pay") {
-				payments["APPLE_PAY"] = append(payments["APPLE_PAY"], Payment{
-					Amount:   money.NewFromFloat(f, money.EUR),
-					Date:     record.Buchung,
-					Receiver: record.Receiver,
-				})
+				payments["APPLE_PAY"] = appendPayment("APPLE_PAY", record, payments, f)
 				return
 			}
 			log.Printf("Could not match %+v with any category. will push to REST category\n", record)
-			payments["rest"] = append(payments["rest"], Payment{
-				Amount:   money.NewFromFloat(f, money.EUR),
-				Date:     record.Buchung,
-				Receiver: record.Receiver,
-			})
+			payments["rest"] = appendPayment("rest", record, payments, f)
 		}
 	}
+}
+
+func appendPayment(key string, record Transaction, payments map[string][]Payment, f float64) []Payment {
+	return append(payments[key], Payment{
+		Amount:   money.NewFromFloat(f, money.EUR),
+		Date:     record.Buchung,
+		Receiver: record.Receiver,
+		Purpose:  record.Purpose,
+	})
 }
 
 func isInList(record Transaction, receiver string) bool {

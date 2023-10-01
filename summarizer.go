@@ -1,8 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"github.com/Rhymond/go-money"
+	"sort"
 )
 
 type Summarized struct {
@@ -37,9 +37,17 @@ func summarize(e map[string][]Payment) []Summarized {
 			Payments: v,
 			Sum:      sum,
 		})
-
-		fmt.Printf("Cat:%v, Sum: %v\n", k, sum.Display())
 	}
+	for _, summarized := range s {
+		sort.Slice(summarized.Payments, func(i, j int) bool {
+			return summarized.Payments[i].Amount.Amount() > summarized.Payments[j].Amount.Amount()
+		})
+	}
+
+	sort.Slice(s, func(i, j int) bool {
+		return s[i].Sum.Amount() > s[j].Sum.Amount()
+	})
+
 	return s
 }
 
