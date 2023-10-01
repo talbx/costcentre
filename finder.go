@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/Rhymond/go-money"
+	"log"
 	"strconv"
 	"strings"
 )
@@ -27,6 +28,15 @@ func find(record Transaction, list temp, payments map[string][]Payment) {
 			}
 		}
 		if found == false {
+			if strings.Contains(record.Purpose, "Apple Pay") {
+				payments["APPLE_PAY"] = append(payments["APPLE_PAY"], Payment{
+					Amount:   money.NewFromFloat(f, money.EUR),
+					Date:     record.Buchung,
+					Receiver: record.Receiver,
+				})
+				return
+			}
+			log.Printf("Could not match %+v with any category. will push to REST category\n", record)
 			payments["rest"] = append(payments["rest"], Payment{
 				Amount:   money.NewFromFloat(f, money.EUR),
 				Date:     record.Buchung,
@@ -37,5 +47,5 @@ func find(record Transaction, list temp, payments map[string][]Payment) {
 }
 
 func isInList(record Transaction, receiver string) bool {
-	return strings.Contains(strings.ToLower(record.Receiver), strings.ToLower(receiver)) || (strings.Contains(strings.ToLower(record.Purpose), strings.ToLower(receiver)))
+	return strings.Contains(strings.ToLower(record.Receiver), strings.ToLower(receiver))
 }

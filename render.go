@@ -14,11 +14,10 @@ func generatePieItems(s []Summarized) []opts.PieData {
 	for _, v := range s {
 		items = append(items, opts.PieData{Name: v.Category + v.Sum.Display(), Value: v.Amount()})
 	}
-	fmt.Println(items)
 	return items
 }
 
-func pieBase(total TotalSummarized) *charts.Pie {
+func pieBase(name string, total TotalSummarized) *charts.Pie {
 
 	pie := charts.NewPie()
 	pie.SetGlobalOptions(
@@ -27,9 +26,9 @@ func pieBase(total TotalSummarized) *charts.Pie {
 			Enterable: true,
 		}),
 		charts.WithAnimation(),
-		charts.WithTitleOpts(opts.Title{Title: fmt.Sprintf("Total spendings: %v", total.TotalSum.Display()), TitleStyle: &opts.TextStyle{Padding: "50px"}, Top: "20%"}),
+		charts.WithTitleOpts(opts.Title{Title: fmt.Sprintf("Total spendings in %v: %v", name, total.TotalSum.Display()), TitleStyle: &opts.TextStyle{Padding: "50px"}, Top: "20%"}),
 	)
-	pie.AddSeries("pie", generatePieItems(total.Transactions), charts.WithPieChartOpts(opts.PieChart{
+	pie.AddSeries(name, generatePieItems(total.Transactions), charts.WithPieChartOpts(opts.PieChart{
 		Radius:   []string{"50%", "75%"},
 		RoseType: "area",
 		Center:   []string{"50%", "50%"},
@@ -72,14 +71,17 @@ func fineGrained(total TotalSummarized, axis *charts.Bar) {
 	}
 }
 
-func create(total TotalSummarized) {
+func create(name string, total TotalSummarized) *charts.Pie {
+	return pieBase(name, total)
+}
+
+func createPage(charts []*charts.Pie) {
 	page := components.NewPage()
-	page.AddCharts(
-		pieBase(total),
-	)
-	page.AddCharts(
-		barBase(total),
-	)
+	for _, chart := range charts {
+		page.AddCharts(
+			chart,
+		)
+	}
 	f, err := os.Create("pie.html")
 	if err != nil {
 		panic(err)

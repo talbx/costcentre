@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/viper"
 	"io"
 	"log"
+	"log/slog"
 	"os"
 )
 
@@ -46,4 +47,13 @@ func readYamlFile(r string) temp {
 	var conf temp
 	err = viper.Unmarshal(&conf)
 	return conf
+}
+
+func ConfigureLogger() {
+	loggingLevel := new(slog.LevelVar)
+	level := slog.LevelInfo
+
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: loggingLevel}))
+	slog.SetDefault(logger)
+	loggingLevel.Set(level)
 }
